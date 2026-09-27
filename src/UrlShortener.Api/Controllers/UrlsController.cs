@@ -31,6 +31,25 @@ public class UrlsController : ControllerBase
             mapping.CreatedAtUtc
         });
     }
+
+    [HttpGet("/{shortCode}")]
+public async Task<IActionResult> RedirectToOriginalUrl(
+    string shortCode,
+    CancellationToken cancellationToken)
+{
+    var originalUrl =
+        await _urlShortenerService.GetOriginalUrlAsync(
+            shortCode,
+            cancellationToken);
+
+    if (originalUrl is null)
+    {
+        return NotFound();
+    }
+
+    return Redirect(originalUrl);
 }
+}
+
 
 public record CreateUrlRequest(string OriginalUrl);

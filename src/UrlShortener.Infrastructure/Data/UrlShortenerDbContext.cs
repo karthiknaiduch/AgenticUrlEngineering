@@ -13,7 +13,13 @@ public class UrlShortenerDbContext : DbContext
 
     public DbSet<UrlMapping> UrlMappings => Set<UrlMapping>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public DbSet<UrlClick> UrlClicks => Set<UrlClick>();
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(UrlShortenerDbContext).Assembly);

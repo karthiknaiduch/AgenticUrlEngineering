@@ -35,14 +35,11 @@ public class UrlRepository : IUrlRepository
     }
 
     public async Task AddAsync(
-        UrlMapping mapping,
-        CancellationToken cancellationToken = default)
-    {
-        await _dbContext.UrlMappings.AddAsync(
-            mapping,
-            cancellationToken);
-
-        await _dbContext.SaveChangesAsync(
-            cancellationToken);
-    }
+    UrlMapping mapping,
+    CancellationToken cancellationToken = default)
+{
+    await _dbContext.UrlMappings.AddAsync(
+        mapping,
+        cancellationToken);
+}
 }

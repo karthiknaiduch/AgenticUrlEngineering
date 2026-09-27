@@ -86,3 +86,9 @@ jobs:
         with:
           name: code-coverage
           path: "**/TestResults/**/coverage.cobertura.xml"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f src/UrlShortener.Api/Dockerfile \
+            -t urlshortener-api:${{ github.sha }} .    

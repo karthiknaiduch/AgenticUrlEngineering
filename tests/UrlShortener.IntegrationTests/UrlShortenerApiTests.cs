@@ -30,10 +30,15 @@ public class UrlShortenerApiTests
                 "/api/v1/urls",
                 request);
 
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.OK,
-            response.StatusCode);
+        if (response.StatusCode != HttpStatusCode.OK)
+{
+    var error =
+        await response.Content.ReadAsStringAsync();
+
+    throw new Exception(
+        $"API returned {(int)response.StatusCode} " +
+        $"{response.StatusCode}. Response: {error}");
+}
 
         var result =
             await response.Content

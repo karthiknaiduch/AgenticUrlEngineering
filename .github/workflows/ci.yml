@@ -10,7 +10,6 @@ on:
 
 jobs:
   build-and-test:
-
     runs-on: ubuntu-latest
 
     services:
@@ -57,7 +56,6 @@ jobs:
           KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -71,6 +69,14 @@ jobs:
 
       - name: Build solution
         run: dotnet build --no-restore --configuration Release
+
+      - name: Install EF Core CLI
+        run: dotnet tool install --global dotnet-ef --version 8.0.11
+
+      - name: Apply database migrations
+        run: dotnet ef database update --project src/UrlShortener.Infrastructure --startup-project src/UrlShortener.Api
+        env:
+          ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=UrlShortenerDb;Username=postgres;Password=postgres
 
       - name: Run tests
         run: dotnet test --no-build --configuration Release

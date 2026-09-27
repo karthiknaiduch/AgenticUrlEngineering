@@ -22,9 +22,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 builder.Services.AddScoped<IUrlCache, RedisUrlCache>();
 
 
-
-//builder.Services.AddHostedService<OutboxPublisherWorker>();
-
 builder.Services.AddControllers();
 
 builder.Services.AddHealthChecks()

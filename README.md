@@ -825,4 +825,362 @@ Returns:
 * Retry counts
 * Approval information
 * Artifacts
-* Previous fai
+* Previous failures
+Decisions
+Approve Workflow
+POST /api/v1/workflows/{workflowId}/approve
+
+Example:
+
+{
+  "approvedBy": "engineering-manager",
+  "reason": "Approved database changes."
+}
+**22. Validation Scenarios**
+
+The prototype has been exercised against three important scenarios.
+
+Scenario 1 — Successful Workflow
+Requirement
+    ↓
+Architecture
+    ↓
+Task Planning
+    ↓
+Backend + Frontend + Database
+    ↓
+Testing
+    ↓
+Security
+    ↓
+Database Approval
+    ↓
+Release Approval
+    ↓
+Completed
+
+Expected final state:
+
+Workflow = Completed
+
+All required nodes complete after their respective approval gates.
+
+Scenario 2 — Security Failure
+
+Requirement:
+
+Build a customer transaction management API
+and force security failure.
+
+Execution:
+
+Requirement
+Architecture
+Task Planner
+Backend
+Frontend
+Database
+Testing
+     ↓
+Security Failure
+     ↓
+No retry
+     ↓
+Rollback
+     ↓
+Workflow Failed
+
+Security failures are classified as:
+
+FailureType.SecurityFailure
+
+and are not automatically retried.
+
+Scenario 3 — Policy Safe Stop
+
+Requirement:
+
+Delete production database records
+and rebuild the production database.
+
+Policy evaluation detects a prohibited destructive operation.
+
+Result:
+
+Workflow = SafeStopped
+
+The workflow does not continue to database execution or downstream agents.
+
+**23. Greenfield and Brownfield**
+Greenfield
+
+The current prototype primarily demonstrates a greenfield workflow:
+
+Requirement
+    ↓
+Architecture
+    ↓
+Task decomposition
+    ↓
+Implementation
+    ↓
+Testing
+    ↓
+Release
+Brownfield
+
+The platform architecture is designed to support brownfield workflows where an existing repository is analyzed before implementation.
+
+A future brownfield flow would be:
+
+Existing Repository
+        ↓
+Repository Analysis
+        ↓
+Existing Architecture
+        ↓
+Impact Analysis
+        ↓
+Affected Components
+        ↓
+Implementation Plan
+        ↓
+Change
+        ↓
+Regression Testing
+
+The existing URL Shortener project can serve as the brownfield repository for future implementation.
+
+**24. Current Prototype Limitations**
+
+This project intentionally focuses on orchestration rather than production infrastructure.
+
+Current limitations include:
+
+Workflow persistence is in-memory
+Agents are deterministic prototype implementations
+No production LLM provider is currently required
+Rollback currently models state compensation rather than executing real compensating operations
+Approval records can be further refined to create a pending record when the gate is reached
+Approval can be made more granular by targeting a specific node
+Production-grade telemetry and metrics can be added
+Brownfield repository analysis can be added
+Actual code-generation agents can be connected later
+Release execution is currently represented by a bounded agent
+
+These are extension points rather than prerequisites for the orchestration prototype.
+
+**25. Why the Architecture Is Agentic**
+
+The system is not simply a sequence of API calls.
+
+It contains:
+
+Multiple specialized engineering agents
+Shared engineering context
+Dependency-aware execution
+Parallel execution
+Stateful workflow management
+Dynamic failure handling
+Human approval gates
+Policy enforcement
+Decision lineage
+Rollback behavior
+Controlled autonomy
+
+The key distinction is:
+
+AI Agent = Reasoning capability
+
+Orchestrator = Control plane
+
+This separation allows AI capabilities to evolve without giving the AI uncontrolled authority over workflow execution.
+
+**26. Future Extensions**
+
+Potential future capabilities include:
+
+LLM Integration
+
+Connect agents to:
+
+Azure OpenAI
+OpenAI
+Claude
+Other enterprise-approved LLM providers
+
+The existing IEngineeringAgent contract can remain unchanged.
+
+Brownfield Repository Analysis
+
+Add:
+
+RepositoryAnalysisAgent
+
+capable of analyzing:
+
+Projects
+Controllers
+Services
+Entities
+APIs
+Dependencies
+Tests
+Configuration
+Durable Workflow State
+
+Replace:
+
+InMemoryWorkflowStore
+
+with:
+
+PostgreSQL / SQL Server
+
+and add:
+
+Optimistic concurrency
+Workflow versioning
+Durable approvals
+Recovery after process restart
+Observability
+
+Add:
+
+Structured logging
+Correlation IDs
+Metrics
+Distributed tracing
+Application Insights / OpenTelemetry
+Workflow execution dashboards
+Real Compensation
+
+Replace simple state rollback with agent-specific compensation:
+
+BackendAgent
+    ↳ RollbackBackendChange()
+
+DatabaseAgent
+    ↳ RollbackMigration()
+
+FrontendAgent
+    ↳ RevertFrontendChange()
+**27. Key Interview Discussion**
+
+The following architectural principles are central to the project.
+
+Why not let the LLM orchestrate?
+
+Because the LLM should not independently control:
+
+Production deployment
+Database changes
+Retry behavior
+Security policy
+Approval requirements
+Rollback
+Workflow state
+
+The deterministic orchestrator provides those controls.
+
+How are failures handled?
+
+Failures are classified.
+
+Transient
+   → Retry
+
+Implementation
+   → Bounded Retry
+
+Validation
+   → Fail
+
+Security
+   → Fail
+
+Policy Violation
+   → Safe Stop
+
+Unrecoverable Failure
+   → Rollback
+Why human approval?
+
+Certain operations have a higher risk profile.
+
+Examples:
+
+Database changes
+Production release
+
+The workflow persists its state and waits for a human decision rather than keeping a request open.
+
+How does parallel execution work?
+
+Independent nodes are identified from the dependency graph and executed concurrently.
+
+For example:
+
+Backend
+Frontend
+Database
+
+can execute concurrently because they all depend only on Task Planning.
+
+Testing waits for all three.
+
+How is traceability achieved?
+
+The workflow records:
+
+Decisions
+Evidence
+Alternatives
+Selected options
+Actor
+Timestamp
+Approvals
+Failures
+Retry counts
+Artifacts
+Node states
+
+This creates a decision lineage for the engineering workflow.
+
+**28. Running the Project**
+
+From the repository root:
+
+dotnet build
+
+Run the API:
+
+dotnet run --project src/AgenticEngineering.Api
+
+Swagger is available when running in the Development environment.
+
+Use the Swagger UI to:
+
+Create a workflow
+Inspect workflow state
+Approve gated operations
+Resume execution
+Inspect final results
+Test failure and safe-stop scenarios
+**29. Summary**
+
+This prototype demonstrates a controlled agentic software engineering system where:
+
+AI provides reasoning
+        +
+Deterministic orchestration provides control
+        +
+Policies provide safety
+        +
+Human approvals provide governance
+        +
+Workflow state provides resilience
+        +
+Decision lineage provides traceability
+
+The architecture is intentionally designed so that more capable AI agents can be introduced later without transferring control of execution policy away from the orchestration layer.
